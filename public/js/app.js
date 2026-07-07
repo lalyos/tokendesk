@@ -4,6 +4,7 @@
 
 import { Landing } from "./pages/landing.js";
 import { Tokens } from "./pages/tokens.js";
+import { ApiKey } from "./pages/api-key.js";
 import { AdminPools } from "./pages/admin-pools.js";
 import { AdminDashboard } from "./pages/admin-dashboard.js";
 import { apiGet } from "./lib/api.js";
@@ -39,6 +40,7 @@ const Header = {
       m("a.brand", { href: "#/" }, "TokenDesk"),
       m("nav", [
         u ? m("a", { href: "#/tokens" }, "Tokens") : null,
+        u ? m("a", { href: "#/api-key" }, "API key") : null,
         u && u.is_admin
           ? m("a", { href: "#/admin" }, "Admin")
           : null,
@@ -71,6 +73,7 @@ await loadMe();
 m.route(document.getElementById("app"), "/", {
   "/": wrap(Landing),
   "/tokens": wrap(Tokens),
+  "/api-key": wrap(ApiKey),
   "/admin": wrap(AdminDashboard),
   "/admin/pools": wrap(AdminPools),
 });

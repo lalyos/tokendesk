@@ -222,28 +222,29 @@ export async function getUserTokenForPool(
   return row?.value ?? null;
 }
 
-// --- machine tokens ---
+// --- API keys ---
+// (DB table name is `machine_tokens`; the public-facing name is "API key".)
 
-export interface MachineToken {
+export interface ApiKey {
   token: string;
   created_at: number;
   rotated_at: number | null;
 }
 
-export async function getMachineToken(
+export async function getApiKey(
   env: Env,
   userId: number,
-): Promise<MachineToken | null> {
+): Promise<ApiKey | null> {
   const row = await env.DB.prepare(
     `SELECT token, created_at, rotated_at
      FROM machine_tokens WHERE user_id = ?`,
   )
     .bind(userId)
-    .first<MachineToken>();
+    .first<ApiKey>();
   return row ?? null;
 }
 
-export async function getUserIdByMachineToken(
+export async function getUserIdByApiKey(
   env: Env,
   token: string,
 ): Promise<number | null> {
@@ -255,7 +256,7 @@ export async function getUserIdByMachineToken(
   return row?.user_id ?? null;
 }
 
-function generateMachineTokenValue(): string {
+function generateApiKeyValue(): string {
   const bytes = new Uint8Array(16);
   crypto.getRandomValues(bytes);
   let hex = "";
@@ -264,15 +265,15 @@ function generateMachineTokenValue(): string {
 }
 
 /**
- * Create or rotate the user's machine token. Returns the plaintext + meta.
+ * Create or rotate the user's API key. Returns the plaintext + meta.
  * SPEC.md §6.1 — the `token` field is the only time the plaintext is exposed.
  */
-export async function upsertMachineToken(
+export async function upsertApiKey(
   env: Env,
   userId: number,
-): Promise<MachineToken> {
+): Promise<ApiKey> {
   const now = Date.now();
-  const token = generateMachineTokenValue();
+  const token = generateApiKeyValue();
   const row = await env.DB.prepare(
     `INSERT INTO machine_tokens (user_id, token, created_at, rotated_at)
      VALUES (?, ?, ?, NULL)
@@ -282,8 +283,8 @@ export async function upsertMachineToken(
      RETURNING token, created_at, rotated_at`,
   )
     .bind(userId, token, now)
-    .first<MachineToken>();
-  if (!row) throw new Error("upsertMachineToken returned no row");
+    .first<ApiKey>();
+  if (!row) throw new Error("upsertApiKey returned no row");
   return row;
 }
 

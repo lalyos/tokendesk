@@ -1,10 +1,11 @@
-// My tokens page. SPEC.md §7.1 "/tokens".
-//   - machine token section: meta + create/rotate, plaintext shown once
-//   - pools section: pre-loaded from /api/tokens, click-to-reveal + copy
+// Pool tokens page. SPEC.md §7.1 "/tokens" (post-rename).
+//   - shows pool tokens the user has been assigned
+//   - click-to-reveal + copy
+//   - empty state reflects the current claim-window state
 //
-// Auth: cookie (set by /auth/callback). Page redirects to / if not logged in.
+// API key lives on its own page (/#/api-key).
 
-import { apiGet, apiPost, ApiError } from "../lib/api.js";
+import { apiGet, ApiError } from "../lib/api.js";
 import { copyToClipboard } from "../lib/clipboard.js";
 
 export const Tokens = {
@@ -12,33 +13,20 @@ export const Tokens = {
     vnode.state.loading = true;
     vnode.state.error = null;
     vnode.state.flash = null;
-    vnode.state.machineToken = { exists: false, created_at: null, rotated_at: null };
-    vnode.state.newToken = null;          // plaintext returned by the most recent POST
-    vnode.state.newTokenHidden = false;   // user can hide it after seeing it
-    vnode.state.busy = false;             // disable buttons during POST
-    vnode.state.poolTokens = {};          // { poolName: value } from /api/tokens
-    vnode.state.poolNames = [];           // ordered list of names with assigned tokens
-    vnode.state.revealed = new Set();     // per-pool-name reveal toggles
-    await Promise.all([loadMeta(vnode), loadPoolTokens(vnode)]);
+    vnode.state.poolTokens = {};
+    vnode.state.poolNames = [];
+    vnode.state.revealed = new Set();
+    await loadPoolTokens(vnode);
     vnode.state.loading = false;
   },
   view: (vnode) =>
     m("main.container", [
-      m("h1", "My tokens"),
+      m("h1", "Tokens"),
       vnode.state.error ? m("p.error", vnode.state.error) : null,
       vnode.state.flash ? m("p.ok", vnode.state.flash) : null,
-      m(MachineTokenSection, { vnode }),
       m(PoolsSection, { vnode }),
     ]),
 };
-
-async function loadMeta(vnode) {
-  try {
-    vnode.state.machineToken = await apiGet("/api/me/machine-token");
-  } catch (e) {
-    vnode.state.error = e instanceof Error ? e.message : String(e);
-  }
-}
 
 async function loadPoolTokens(vnode) {
   try {
@@ -54,143 +42,6 @@ async function loadPoolTokens(vnode) {
     }
   }
 }
-
-function fmtTime(ms) {
-  if (!ms) return "—";
-  const d = new Date(ms);
-  return d.toLocaleString();
-}
-
-// --- Machine token ---
-
-const MachineTokenSection = {
-  view: (vnode) => {
-    const s = vnode.attrs.vnode.state;
-    const mt = s.machineToken;
-    const newTok = s.newToken;
-    return m("section.card", [
-      m("h2", "Machine token"),
-      m("p.muted.small", "Use this token to call the API from CI/scripts. Format: td_pat_<32 hex>."),
-      newTok
-        ? m(NewTokenDisplay, { vnode })
-        : m(ExistingTokenMeta, { vnode, mt }),
-    ]);
-  },
-};
-
-const ExistingTokenMeta = {
-  view: (vnode) => {
-    const s = vnode.attrs.vnode.state;
-    const mt = vnode.attrs.mt;
-    const create = async () => {
-      s.busy = true;
-      s.error = null;
-      try {
-        s.newToken = await apiPost("/api/me/machine-token", undefined);
-        s.newTokenHidden = false;
-        s.machineToken = {
-          exists: true,
-          created_at: s.newToken.created_at,
-          rotated_at: s.newToken.rotated_at,
-        };
-        s.flash = "Machine token created.";
-      } catch (e) {
-        s.error = e instanceof Error ? e.message : String(e);
-      } finally {
-        s.busy = false;
-        m.redraw();
-      }
-    };
-    if (!mt.exists) {
-      return m("div", [
-        m("p", "You don't have a machine token yet."),
-        m("button.btn.btn-primary", { type: "button", disabled: s.busy, onclick: create }, s.busy ? "Creating..." : "Create machine token"),
-      ]);
-    }
-    return m("div", [
-      m("dl.meta", [
-        m("dt", "Created"),
-        m("dd", fmtTime(mt.created_at)),
-        m("dt", "Last rotated"),
-        m("dd", fmtTime(mt.rotated_at)),
-        m("dt", "Plaintext"),
-        m("dd", m("em.muted", "hidden — rotate to view")),
-      ]),
-      m("button.btn", { type: "button", disabled: s.busy, onclick: create }, s.busy ? "Rotating..." : "Rotate machine token"),
-    ]);
-  },
-};
-
-const NewTokenDisplay = {
-  view: (vnode) => {
-    const s = vnode.attrs.vnode.state;
-    const t = s.newToken;
-    const shown = !s.newTokenHidden;
-    return m("div.new-token", [
-      m("p.warning", "This is the only time this token will be shown. Save it now."),
-      m("div.row", [
-        m("input.code", {
-          type: shown ? "text" : "password",
-          readonly: true,
-          value: t.token,
-          onfocus: (e) => e.target.select(),
-        }),
-        m(
-          "button.btn",
-          {
-            type: "button",
-            onclick: async () => {
-              const ok = await copyToClipboard(t.token);
-              s.flash = ok ? "Token copied." : "Copy failed.";
-              m.redraw();
-            },
-          },
-          "Copy",
-        ),
-        m(
-          "button.btn",
-          {
-            type: "button",
-            onclick: () => {
-              s.newTokenHidden = !s.newTokenHidden;
-              m.redraw();
-            },
-          },
-          shown ? "Hide" : "Show",
-        ),
-        m(
-          "button.btn",
-          {
-            type: "button",
-            disabled: s.busy,
-            onclick: async () => {
-              s.busy = true;
-              s.error = null;
-              try {
-                s.newToken = await apiPost("/api/me/machine-token", undefined);
-                s.newTokenHidden = false;
-                s.machineToken = {
-                  exists: true,
-                  created_at: s.newToken.created_at,
-                  rotated_at: s.newToken.rotated_at,
-                };
-                s.flash = "Machine token rotated.";
-              } catch (e) {
-                s.error = e instanceof Error ? e.message : String(e);
-              } finally {
-                s.busy = false;
-                m.redraw();
-              }
-            },
-          },
-          s.busy ? "Rotating..." : "Rotate again",
-        ),
-      ]),
-    ]);
-  },
-};
-
-// --- Pools ---
 
 const PoolsSection = {
   view: (vnode) => {

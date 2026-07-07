@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Changed
+- Renamed the personal access token from "machine token" to "API key" everywhere except the DB table (`machine_tokens`, kept to avoid another migration). Endpoint: `GET/POST /api/me/api-key`. SPA: new `/#/api-key` page; `/#/tokens` now shows only the pool tokens table and is headed "Tokens". Code: `ApiKey` type, `getApiKey` / `getUserIdByApiKey` / `upsertApiKey` helpers. Topbar gets a new "API key" link.
+
 ### Fixed
 - Infinite redirect loop on logout/login. The 401 handler in `lib/api.js` used to redirect to `/` for every 401, including the initial `/api/me` call on the landing page — which reloaded the page and triggered the same 401. Now we only redirect on 401 when we're on a hash route; on `/`, the SPA renders the login button when `me` is null.
 

@@ -29,7 +29,9 @@ export const Landing = {
         ]),
         me.email ? m("p.muted.small", me.email) : null,
         m("p", [
-          m("a.btn", { href: "#/tokens" }, "My tokens"),
+          m("a.btn", { href: "#/tokens" }, "Tokens"),
+          " ",
+          m("a.btn", { href: "#/api-key" }, "API key"),
           " ",
           me.is_admin
             ? m("a.btn", { href: "#/admin" }, "Admin")
