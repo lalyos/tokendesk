@@ -50,6 +50,7 @@ export const onRequestGet: PagesFunction<Env, any, PagesContextData> = async (co
     return new Response(null, { status: 302, headers });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "auth_failed";
+    console.error("auth callback error:", err);
     return Response.redirect(
       new URL(`/?error=${encodeURIComponent(msg)}`, context.request.url).toString(),
       302,

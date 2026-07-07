@@ -36,7 +36,8 @@ function constantTimeEqual(a: string, b: string): boolean {
 }
 
 function isLocal(request: Request): boolean {
-  return new URL(request.url).hostname === "localhost";
+  const h = new URL(request.url).hostname;
+  return h === "localhost" || h === "127.0.0.1" || h === "::1";
 }
 
 function baseAttrs(request: Request): string {
