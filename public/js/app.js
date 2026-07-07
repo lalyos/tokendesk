@@ -1,56 +1,68 @@
-// Landing page: shows login button or logged-in state via /api/me.
+// SPA entrypoint. Wires m.route with a shared Layout (header + main).
+// Mithril is loaded from the CDN as a global. The Mithril script tag in
+// index.html has `defer`, so by the time this module runs `m` is defined.
 
-const content = document.getElementById("content");
+import { Landing } from "./pages/landing.js";
+import { AdminPools } from "./pages/admin-pools.js";
+import { apiGet } from "./lib/api.js";
 
-function escapeHtml(s) {
-  return String(s)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
+// One global "me" — fetched once on page load, updated on login/logout.
+const me = { current: null, loaded: false };
+
+// Expose a getter to other components (Landing reads it instead of re-fetching).
+window.__td_me = () => me.current;
 
 async function loadMe() {
   try {
-    const res = await fetch("/api/me", {
-      headers: { Accept: "application/json" },
-      credentials: "same-origin",
-    });
-    if (res.status === 401) return null;
-    if (!res.ok) return null;
-    return await res.json();
+    me.current = await apiGet("/api/me");
   } catch {
-    return null;
+    me.current = null;
   }
+  me.loaded = true;
 }
 
-function renderError() {
-  const url = new URL(window.location.href);
-  const err = url.searchParams.get("error");
-  if (!err) return "";
-  return `<p class="error">Error: ${escapeHtml(err)}</p>`;
-}
+// Layout: header (nav + logout) + routed page content.
+const Layout = {
+  view: (vnode) =>
+    m(".app", [
+      m(Header),
+      m("main", vnode.children),
+    ]),
+};
 
-function render() {
-  loadMe().then((user) => {
-    if (user) {
-      content.innerHTML = `
-        <p class="lede">Logged in as <strong>${escapeHtml(user.gh_user)}</strong>${user.is_admin ? ' <span class="badge">admin</span>' : ""}</p>
-        ${user.email ? `<p class="muted small">${escapeHtml(user.email)}</p>` : ""}
-        <form method="post" action="/auth/logout">
-          <button class="btn" type="submit">Logout</button>
-        </form>
-        ${renderError()}
-      `;
-    } else {
-      content.innerHTML = `
-        <p class="lede">Sign in with GitHub to claim tokens from admin-opened pools.</p>
-        <a class="btn btn-primary" href="/auth/login">Login with GitHub</a>
-        ${renderError()}
-      `;
-    }
-  });
-}
+const Header = {
+  view: () => {
+    const u = me.current;
+    return m("header.topbar", [
+      m("a.brand", { href: "#/" }, "TokenDesk"),
+      m("nav", [
+        u && u.is_admin ? m("a", { href: "#/admin/pools" }, "Pools") : null,
+      ]),
+      m("div.right", [
+        u
+          ? m("span.user", [
+              u.is_admin ? m("span.badge", "admin") : null,
+              " ",
+              m("strong", u.gh_user),
+            ])
+          : null,
+        u
+          ? m("form.inline", { method: "post", action: "/auth/logout" }, [
+              m("button.btn.small", { type: "submit" }, "Logout"),
+            ])
+          : m("a.btn.small.btn-primary", { href: "/auth/login" }, "Login with GitHub"),
+      ]),
+    ]);
+  },
+};
 
-render();
+// Wrap a page component in Layout.
+const wrap = (Page) => ({
+  view: (vnode) => m(Layout, m(Page, vnode.attrs)),
+});
+
+await loadMe();
+m.route(document.getElementById("app"), "/", {
+  "/": wrap(Landing),
+  "/admin/pools": wrap(AdminPools),
+});

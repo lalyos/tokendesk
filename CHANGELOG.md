@@ -7,6 +7,9 @@
 - `functions/_lib/validate.ts` (pool name + token array validation, `ValidationError`, `jsonError`).
 - Pool DB helpers in `functions/_lib/db.ts` (`getPoolByName`, `createPool`, `addPoolTokens`, `listPoolSummaries`, `getPoolDetail`).
 - Admin gate middleware `functions/api/admin/_middleware.ts` (401 unauth, 403 not admin).
+- Admin pool management UI at `#/admin/pools` (Mithril): list pools, create with multi-line tokens textarea, add tokens to existing pool, per-token show/hide + copy. Mithril loaded from CDN (`unpkg`); hash routing via `m.route` with a shared `Layout` (topbar + main).
+- `public/js/lib/api.js` (fetch wrapper: JSON, credentials, 401 -> redirect), `public/js/lib/clipboard.js` (clipboard + `execCommand` fallback).
+- Topbar with brand, admin nav, and login/logout (matches Landing behavior).
 - Static welcome page at `public/index.html` with "Login with GitHub" button.
 - `wrangler.toml` configured for Cloudflare Pages (`public/` as build output, no bindings).
 - `package.json` with `npm run dev`, `npm run deploy`, `npm run typecheck` scripts.
