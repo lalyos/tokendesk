@@ -4,7 +4,21 @@ pages_build_output_dir = "./public"
 
 # D1 binding. The D1 was created in the `lalyos` CF account with
 # `wrangler d1 create tokendesk`. See SPEC.md §3.
+#
+# The top-level binding covers `wrangler pages dev` (local). The
+# env-specific entries are required for actual Pages deploys — top-level
+# bindings don't carry over to the production or preview envs.
 [[d1_databases]]
+binding = "DB"
+database_name = "tokendesk"
+database_id = "fd755ab1-6b9e-4b3e-9af3-3c22f345716e"
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "tokendesk"
+database_id = "fd755ab1-6b9e-4b3e-9af3-3c22f345716e"
+
+[[env.preview.d1_databases]]
 binding = "DB"
 database_name = "tokendesk"
 database_id = "fd755ab1-6b9e-4b3e-9af3-3c22f345716e"
