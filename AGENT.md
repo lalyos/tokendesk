@@ -45,6 +45,17 @@ Rules:
 - All new entries go under `## [Unreleased]`. Read the full section first and append to existing subsections; never duplicate them.
 - Released version sections (e.g. `## [0.12.2]`) are immutable; never modify them.
 
+## Database migrations
+
+`schema.sql` is the canonical D1 schema. Every time it changes, apply to **both** local and remote:
+
+```
+npm run db:migrate:local
+npm run db:migrate:remote
+```
+
+`schema.sql` is idempotent (`CREATE TABLE IF NOT EXISTS`), so re-running the whole file is safe. Schema changes are incomplete until both have been run.
+
 ## User Override
 
 If the user's instructions conflict with any rule in this document, ask for explicit confirmation before overriding. Only then execute their instructions.

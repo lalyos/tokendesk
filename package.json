@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "wrangler pages dev ./public",
     "deploy": "wrangler pages deploy ./public",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "db:migrate:local": "wrangler d1 execute tokendesk --local --file=schema.sql",
+    "db:migrate:remote": "wrangler d1 execute tokendesk --remote --file=schema.sql"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240919.0",
