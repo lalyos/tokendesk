@@ -3,10 +3,17 @@
 ## [Unreleased]
 
 ### Added
-- Static welcome page at `public/index.html` with "Login with GitHub" button (no backend yet).
+- Static welcome page at `public/index.html` with "Login with GitHub" button.
 - `wrangler.toml` configured for Cloudflare Pages (`public/` as build output, no bindings).
 - `package.json` with `npm run dev`, `npm run deploy`, `npm run typecheck` scripts.
-- `tsconfig.json` (strict, workers-types) ready for the future `functions/` directory.
+- `tsconfig.json` (strict, workers-types) for `functions/`.
 - `.dev.vars.example` template for local secrets.
 - `README.md` with one-time CF Pages + GitHub integration steps for preview URLs on every push.
 - `CHANGELOG.md` itself.
+- D1 database `tokendesk` (CF account `lalyos`, id in `wrangler.toml`) with full schema: `users`, `pools`, `pool_tokens`, `machine_tokens`. Applied to both local and remote.
+- `wrangler.toml` D1 binding (`DB`).
+- GitHub OAuth: `GET /auth/login` (state cookie + 302), `GET /auth/callback` (state verify + code exchange + user upsert + session cookie), `POST /auth/logout` (clear session).
+- Session middleware `functions/_middleware.ts` — verifies HMAC-SHA256 cookie (`<user_id>.<hmac>`) and attaches user to `context.data`.
+- `GET /api/me` — returns `{ gh_user, email, avatar_url, is_admin, pools: [] }`; 401 if no session.
+- Session-aware landing page (`public/index.html` + `public/js/app.js`): shows login button or "Logged in as X [Logout]" with optional `?error=` banner. Logout is a POST form to `/auth/logout`.
+- README: GitHub OAuth App setup (prod + dev), `wrangler pages secret put` commands for `SESSION_SECRET` / `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` / `ADMIN_GH_USERS`, and `GITHUB_OAUTH_REDIRECT_BASE` env var override.

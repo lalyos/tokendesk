@@ -2,8 +2,14 @@ name = "tokendesk"
 compatibility_date = "2024-09-01"
 pages_build_output_dir = "./public"
 
-# D1 + KV bindings will be added here once the backend lands.
-# See SPEC.md sections 3 and 4.
+# D1 binding. The D1 was created in the `lalyos` CF account with
+# `wrangler d1 create tokendesk`. See SPEC.md §3.
+[[d1_databases]]
+binding = "DB"
+database_name = "tokendesk"
+database_id = "fd755ab1-6b9e-4b3e-9af3-3c22f345716e"
+
+# KV binding for the claim window. To be added when §4 lands.
 
 # Env vars. Secrets (GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, SESSION_SECRET,
 # ADMIN_GH_USERS) go via `wrangler pages secret put <NAME>` per environment.
