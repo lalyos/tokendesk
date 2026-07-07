@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Changed
+- `GET /api/token/{pool}` (singular) now defaults to **plain text** instead of JSON, so `TOKEN=$(curl .../api/token/openrouter)` Just Works. JSON is only returned when the caller sends `Accept: application/json`. `GET /api/tokens` (plural) and every other endpoint keep JSON as the default. New helper `wantsJson(request)` in `functions/_lib/respond.ts`.
+
 ### Fixed
 - `/#/api-key` page was blank and broke the rest of the SPA: the `ExistingKeyMeta` sub-component received a `key` prop, but `key` is reserved by Mithril for keyed reconciliation and is not passed to `vnode.attrs`. So `vnode.attrs.key` was `undefined`, `if (!k.exists)` threw, and the broken mount state poisoned subsequent routes. Renamed state field and prop to `apiKey`.
 

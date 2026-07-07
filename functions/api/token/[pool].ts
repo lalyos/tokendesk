@@ -1,12 +1,16 @@
 // GET /api/token/{pool} — single pool token for the current user. SPEC.md §6, §6.2.
-// Auth: session cookie.
-//   Default JSON: { "value": "..." }
-//   Accept: text/plain -> raw value (the only time the value is exposed via the UI).
+// Auth: session cookie or Bearer (td_pat_...).
+//   Default (no Accept or Accept: */*): plain text (the raw value).
+//     Convenient for shell scripts:  TOKEN=$(curl .../api/token/openrouter)
+//   Accept: application/json        -> { "value": "..." }
+//
+// Compare /api/tokens (plural) which defaults to JSON because it returns
+// a structured object.
 
 import type { PagesFunction } from "@cloudflare/workers-types";
 import type { Env, PagesContextData } from "../../_lib/env";
 import { getUserTokenForPool } from "../../_lib/db";
-import { jsonResponse, textResponse, wantsTextPlain } from "../../_lib/respond";
+import { jsonResponse, textResponse, wantsJson } from "../../_lib/respond";
 import { isValidPoolName, jsonError } from "../../_lib/validate";
 
 export const onRequestGet: PagesFunction<Env, any, PagesContextData> = async (context) => {
@@ -22,8 +26,8 @@ export const onRequestGet: PagesFunction<Env, any, PagesContextData> = async (co
   if (value === null) {
     return jsonError(404, "no token in this pool for the current user");
   }
-  if (wantsTextPlain(context.request)) {
-    return textResponse(value);
+  if (wantsJson(context.request)) {
+    return jsonResponse({ value });
   }
-  return jsonResponse({ value });
+  return textResponse(value);
 };

@@ -209,9 +209,17 @@ GET    /api/admin/assignments            → [ { pool, gh_user, assigned_at } ]
 - **One token per user** in v1.
 
 ### 6.2 `/api/tokens` and `/api/token/{pool}` content negotiation
-- Default response (no `Accept` header or `Accept: */*`): JSON.
+
+`/api/tokens` (plural, all of the user's tokens at once — a structured object):
+- Default (no `Accept` or `Accept: */*`): JSON.
 - `Accept: application/json`: JSON object `{ "poolname": "value", ... }`.
 - `Accept: text/plain`: each line is `POOLNAME=value\n`. Easy to `eval` in bash.
+
+`/api/token/{pool}` (singular, one value — optimised for shell capture):
+- Default (no `Accept` or `Accept: */*`): **plain text** (the raw value), so
+  `TOKEN=$(curl .../api/token/openrouter)` Just Works.
+- `Accept: application/json`: JSON `{ "value": "..." }`.
+- `Accept: text/plain`: plain text (same as default).
 - Auth: cookie (for SPA) OR `Authorization: Bearer <td_pat_xxx>` (for CI/scripts). Same handler.
 - 404 if user has no token in the requested pool.
 - 401 if neither cookie nor Bearer is present or valid.

@@ -9,6 +9,17 @@ export function wantsTextPlain(request: Request): boolean {
   return accept.toLowerCase().includes("text/plain");
 }
 
+/**
+ * Inverse of wantsTextPlain for endpoints where the default is text/plain
+ * (e.g. GET /api/token/{pool} — shell scripts do TOKEN=$(curl ...)).
+ * JSON is only returned if the caller explicitly asks for it.
+ */
+export function wantsJson(request: Request): boolean {
+  return (request.headers.get("Accept") ?? "")
+    .toLowerCase()
+    .includes("application/json");
+}
+
 export function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
