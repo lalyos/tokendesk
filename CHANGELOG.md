@@ -3,6 +3,10 @@
 ## [Unreleased]
 
 ### Added
+- Pool admin API: `GET/POST /api/admin/pools`, `GET/POST /api/admin/pools/{name}`. Admin-only; supports pool name validation (`^[a-z0-9][a-z0-9-]{0,31}$`), duplicate-pool 409, batched token inserts.
+- `functions/_lib/validate.ts` (pool name + token array validation, `ValidationError`, `jsonError`).
+- Pool DB helpers in `functions/_lib/db.ts` (`getPoolByName`, `createPool`, `addPoolTokens`, `listPoolSummaries`, `getPoolDetail`).
+- Admin gate middleware `functions/api/admin/_middleware.ts` (401 unauth, 403 not admin).
 - Static welcome page at `public/index.html` with "Login with GitHub" button.
 - `wrangler.toml` configured for Cloudflare Pages (`public/` as build output, no bindings).
 - `package.json` with `npm run dev`, `npm run deploy`, `npm run typecheck` scripts.
