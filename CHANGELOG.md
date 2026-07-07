@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### Added
+- `/tokens` page (`#tokens`): machine token section (create/rotate with one-time plaintext + copy + warning + meta) and pools list (pre-loaded, per-pool show/hide + copy). Empty state when user has no assignments. Topbar gets a "Tokens" link for logged-in users.
 - User tokens API: `GET /api/tokens` and `GET /api/token/{pool}` (cookie auth, content-negotiated JSON or `text/plain`).
 - `POST /api/me/machine-token` (create/rotate, returns plaintext once + meta) and `GET /api/me/machine-token` (meta only: `exists`, `created_at`, `rotated_at`).
 - `functions/_lib/respond.ts` (`wantsTextPlain`, `jsonResponse`, `textResponse`).

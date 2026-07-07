@@ -166,6 +166,34 @@ textarea {
   font-size: 0.88rem;
 }
 
+.warning {
+  margin: 0 0 0.8rem;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid #d29922;
+  background: rgba(210, 153, 34, 0.12);
+  color: #e3b341;
+  border-radius: 6px;
+  font-size: 0.88rem;
+}
+
+input.code {
+  flex: 1;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.9rem;
+}
+
+.new-token .row { flex-wrap: wrap; }
+
+dl.meta {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.25rem 1rem;
+  margin: 0 0 0.9rem;
+  font-size: 0.92rem;
+}
+dl.meta dt { color: var(--muted); }
+dl.meta dd { margin: 0; }
+
 .badge {
   display: inline-block;
   padding: 0.1rem 0.5rem;

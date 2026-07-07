@@ -3,6 +3,7 @@
 // index.html has `defer`, so by the time this module runs `m` is defined.
 
 import { Landing } from "./pages/landing.js";
+import { Tokens } from "./pages/tokens.js";
 import { AdminPools } from "./pages/admin-pools.js";
 import { apiGet } from "./lib/api.js";
 
@@ -36,6 +37,7 @@ const Header = {
     return m("header.topbar", [
       m("a.brand", { href: "#/" }, "TokenDesk"),
       m("nav", [
+        u ? m("a", { href: "#/tokens" }, "Tokens") : null,
         u && u.is_admin ? m("a", { href: "#/admin/pools" }, "Pools") : null,
       ]),
       m("div.right", [
@@ -64,5 +66,6 @@ const wrap = (Page) => ({
 await loadMe();
 m.route(document.getElementById("app"), "/", {
   "/": wrap(Landing),
+  "/tokens": wrap(Tokens),
   "/admin/pools": wrap(AdminPools),
 });
