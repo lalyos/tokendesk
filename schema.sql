@@ -36,3 +36,12 @@ CREATE TABLE IF NOT EXISTS machine_tokens (
   created_at  INTEGER NOT NULL,
   rotated_at  INTEGER
 );
+
+-- Single-row table for the claim window. v1 is manual open/close (no timer),
+-- so we only need is_open + who/when. CHECK enforces single row.
+CREATE TABLE IF NOT EXISTS window_state (
+  id                INTEGER PRIMARY KEY CHECK (id = 1),
+  is_open           INTEGER NOT NULL DEFAULT 0,
+  opened_by_user_id INTEGER REFERENCES users(id),
+  opened_at         INTEGER
+);
