@@ -31,8 +31,8 @@ export const AdminPools = {
       m("h1", "Pools"),
       vnode.state.error ? m("p.error", vnode.state.error) : null,
       vnode.state.flash ? m("p.ok", vnode.state.flash) : null,
-      m(CreateForm, { state: vnode.state }),
       m(PoolList, { state: vnode.state }),
+      m(CreateForm, { state: vnode.state }),
     ]),
 };
 
