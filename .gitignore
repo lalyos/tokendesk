@@ -1,2 +1,14 @@
 users
 pi-session*.html
+
+# Node
+node_modules/
+
+# Wrangler / local dev
+.wrangler/
+.dev.vars
+dist/
+
+# OS / editor
+.DS_Store
+*.log

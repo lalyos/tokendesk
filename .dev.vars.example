@@ -1,0 +1,7 @@
+# Copy to .dev.vars and fill in. .dev.vars is gitignored.
+# In production, set these via `wrangler pages secret put <NAME>`.
+
+GITHUB_CLIENT_ID=<from-localhost-oauth-app>
+GITHUB_CLIENT_SECRET=<from-localhost-oauth-app>
+SESSION_SECRET=<openssl rand -base64 32>
+ADMIN_GH_USERS=your-gh-username

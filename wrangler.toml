@@ -1,0 +1,12 @@
+name = "tokendesk"
+compatibility_date = "2024-09-01"
+pages_build_output_dir = "./public"
+
+# D1 + KV bindings will be added here once the backend lands.
+# See SPEC.md sections 3 and 4.
+
+# Env vars. Secrets (GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, SESSION_SECRET,
+# ADMIN_GH_USERS) go via `wrangler pages secret put <NAME>` per environment.
+# Override GITHUB_OAUTH_REDIRECT_BASE in the CF Pages project settings for prod.
+[vars]
+GITHUB_OAUTH_REDIRECT_BASE = "http://localhost:8788"
