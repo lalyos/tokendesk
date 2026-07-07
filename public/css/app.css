@@ -143,6 +143,8 @@ textarea {
 .btn-primary:hover:not(:disabled) { filter: brightness(1.1); background: var(--accent); }
 .btn.small { padding: 0.3rem 0.65rem; font-size: 0.85rem; }
 .btn.tiny { padding: 0.15rem 0.5rem; font-size: 0.78rem; }
+.btn.danger { background: #4a1d1d; border-color: #6e2222; color: #ffa198; }
+.btn.danger:hover:not(:disabled) { background: #6e2222; }
 
 .muted { color: var(--muted); }
 .small { font-size: 0.85rem; }

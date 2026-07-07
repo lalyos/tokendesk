@@ -148,6 +148,27 @@ export async function getPoolDetail(
   };
 }
 
+/**
+ * Hard-delete a pool and all of its tokens. Returns whether the pool
+ * existed and how many token rows were removed. The two DELETEs run as a
+ * batch (single round trip); D1 enforces FKs, so the pool_tokens delete
+ * must run first.
+ */
+export async function deletePool(
+  env: Env,
+  name: string,
+): Promise<{ deleted: boolean; tokensDeleted: number }> {
+  const pool = await getPoolByName(env, name);
+  if (!pool) return { deleted: false, tokensDeleted: 0 };
+  const results = await env.DB.batch([
+    env.DB.prepare(`DELETE FROM pool_tokens WHERE pool_id = ?`).bind(pool.id),
+    env.DB.prepare(`DELETE FROM pools WHERE id = ?`).bind(pool.id),
+  ]);
+  const tokensDeleted =
+    (results[0] as { meta?: { changes?: number } } | undefined)?.meta?.changes ?? 0;
+  return { deleted: true, tokensDeleted };
+}
+
 // --- user-side: tokens assigned to a user ---
 
 export async function getUserAssignedPoolNames(

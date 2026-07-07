@@ -1,11 +1,18 @@
-// GET  /api/admin/pools/{name}  — pool detail incl. all tokens. SPEC.md §6.
-// POST /api/admin/pools/{name}  — append tokens to an existing pool. SPEC.md §6.
+// GET    /api/admin/pools/{name}  — pool detail incl. all tokens. SPEC.md §6.
+// POST   /api/admin/pools/{name}  — append tokens to an existing pool. SPEC.md §6.
 //   body: { tokens: ["v1","v2",...] }
 //   200 -> { name, total, free, assigned }
+// DELETE /api/admin/pools/{name}  — hard-delete the pool and all its tokens.
+//   204 -> no body. 404 if missing.
 
 import type { PagesFunction } from "@cloudflare/workers-types";
 import type { Env, PagesContextData } from "../../../_lib/env";
-import { addPoolTokens, getPoolByName, getPoolDetail } from "../../../_lib/db";
+import {
+  addPoolTokens,
+  deletePool,
+  getPoolByName,
+  getPoolDetail,
+} from "../../../_lib/db";
 import {
   ValidationError,
   jsonError,
@@ -58,3 +65,16 @@ export const onRequestPost: PagesFunction<Env, any, PagesContextData> = async (c
     headers: { "Content-Type": "application/json" },
   });
 };
+
+export const onRequestDelete: PagesFunction<Env, any, PagesContextData> = async (context) => {
+  const name = context.params.name;
+  if (!isValidPoolName(name)) {
+    return jsonError(400, "invalid pool name");
+  }
+  const result = await deletePool(context.env, name);
+  if (!result.deleted) {
+    return jsonError(404, "pool not found");
+  }
+  return new Response(null, { status: 204 });
+};
+

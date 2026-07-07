@@ -6,7 +6,7 @@
 // Window/claim is out of scope here (postponed); the page assumes the admin
 // can manage pool contents, claim wiring lands later.
 
-import { apiGet, apiPost, parseTokenList } from "../lib/api.js";
+import { apiGet, apiPost, apiSend, parseTokenList } from "../lib/api.js";
 import { copyToClipboard } from "../lib/clipboard.js";
 
 const POOL_NAME_RE = /^[a-z0-9][a-z0-9-]{0,31}$/;
@@ -156,13 +156,36 @@ const PoolRow = {
       }
       m.redraw();
     };
+    const doDelete = async () => {
+      const assignedNote = p.assigned > 0
+        ? ` ${p.assigned} token(s) are currently assigned to users and those users will lose access.`
+        : "";
+      const msg = `Delete pool '${p.name}'? This removes ${p.total} token(s).${assignedNote} This cannot be undone.`;
+      if (!window.confirm(msg)) return;
+      s.error = null;
+      try {
+        await apiSend("DELETE", `/api/admin/pools/${encodeURIComponent(p.name)}`);
+        s.expanded.delete(p.name);
+        s.revealedAll.delete(p.name);
+        s.detail[p.name] = undefined;
+        s.flash = `Pool '${p.name}' deleted.`;
+        await refresh({ state: s });
+      } catch (e) {
+        s.error = e instanceof Error ? e.message : String(e);
+        m.redraw();
+      }
+    };
     return [
       m("tr", [
         m("td", m("code", p.name)),
         m("td", p.total),
         m("td", p.free),
         m("td", p.assigned),
-        m("td", m("button.btn.small", { type: "button", onclick: toggle }, expanded ? "Hide tokens" : "View tokens")),
+        m("td", [
+          m("button.btn.small", { type: "button", onclick: toggle }, expanded ? "Hide tokens" : "View tokens"),
+          " ",
+          m("button.btn.small.danger", { type: "button", onclick: doDelete, title: `Delete pool '${p.name}'` }, "Delete"),
+        ]),
       ]),
       expanded ? m("tr.expand", m("td.expand-cell", { colspan: 5 }, m(PoolDetail, { state: s, pool: p }))) : null,
     ];
