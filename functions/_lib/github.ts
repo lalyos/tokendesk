@@ -35,15 +35,12 @@ export async function exchangeCode(
       redirect_uri: redirectUri,
     }),
   });
-  // Read the body as text first so we can see exactly what GitHub returned
-  // even on error or non-JSON responses.
   const bodyText = await res.text();
-  console.log("[github.exchangeCode] response", {
-    status: res.status,
-    contentType: res.headers.get("content-type"),
-    bodyPreview: bodyText.slice(0, 500),
-  });
   if (!res.ok) {
+    console.error("[github.exchangeCode] non-2xx", {
+      status: res.status,
+      body: bodyText.slice(0, 500),
+    });
     throw new Error(`github_exchange_http_${res.status}`);
   }
   let data: { access_token?: string; error?: string; error_description?: string };
@@ -53,6 +50,11 @@ export async function exchangeCode(
     throw new Error(`github_exchange_non_json: ${bodyText.slice(0, 200)}`);
   }
   if (!data.access_token) {
+    console.error("[github.exchangeCode] no access_token", {
+      error: data.error,
+      error_description: data.error_description,
+      body: bodyText.slice(0, 500),
+    });
     const detail = data.error_description || data.error || "no_token";
     throw new Error(`github_exchange_${detail}`);
   }
@@ -65,9 +67,9 @@ export async function getUser(accessToken: string): Promise<GhUser> {
   });
   if (!res.ok) {
     const body = await res.text();
-    console.error("[github.getUser] HTTP error", {
+    console.error("[github.getUser] non-2xx", {
       status: res.status,
-      bodyPreview: body.slice(0, 500),
+      body: body.slice(0, 500),
     });
     throw new Error(`github_user_http_${res.status}`);
   }
@@ -82,9 +84,9 @@ export async function getPrimaryEmail(
   });
   if (!res.ok) {
     const body = await res.text();
-    console.error("[github.getPrimaryEmail] HTTP error", {
+    console.error("[github.getPrimaryEmail] non-2xx", {
       status: res.status,
-      bodyPreview: body.slice(0, 500),
+      body: body.slice(0, 500),
     });
     return null;
   }

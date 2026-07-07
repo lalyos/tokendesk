@@ -42,7 +42,9 @@ function isLocal(request: Request): boolean {
 
 function baseAttrs(request: Request): string {
   const secure = isLocal(request) ? "" : "; Secure";
-  return `HttpOnly; SameSite=Lax; Path=/${secure}`;
+  // Leading "; " — this string is appended directly after `name=value`,
+  // so the value/attribute boundary is the caller's responsibility.
+  return `; HttpOnly; SameSite=Lax; Path=/${secure}`;
 }
 
 export function readCookie(request: Request, name: string): string | null {
@@ -73,33 +75,15 @@ export async function verifySession(
   secret: string,
 ): Promise<number | null> {
   const cookie = readCookie(request, SESSION_COOKIE);
-  console.log("[verifySession]", {
-    cookieFound: !!cookie,
-    cookieValue: cookie?.slice(0, 80),
-    cookieLen: cookie?.length,
-  });
   if (!cookie) return null;
   const dot = cookie.indexOf(".");
-  if (dot < 0) {
-    console.warn("[verifySession] no dot in cookie value");
-    return null;
-  }
+  if (dot < 0) return null;
   const userIdStr = cookie.slice(0, dot);
   const mac = cookie.slice(dot + 1);
   const expected = await hmac(secret, userIdStr);
-  const matches = constantTimeEqual(mac, expected);
-  console.log("[verifySession] hmac check", {
-    userIdStr,
-    macLen: mac.length,
-    expectedLen: expected.length,
-    matches,
-  });
-  if (!matches) return null;
+  if (!constantTimeEqual(mac, expected)) return null;
   const id = Number(userIdStr);
-  if (!Number.isInteger(id) || id <= 0) {
-    console.warn("[verifySession] bad userId", { userIdStr });
-    return null;
-  }
+  if (!Number.isInteger(id) || id <= 0) return null;
   return id;
 }
 
@@ -108,15 +92,15 @@ export function sessionSetCookie(request: Request, value: string): string {
 }
 
 export function sessionClearCookie(request: Request): string {
-  return `${SESSION_COOKIE}=; ${baseAttrs(request)}; Max-Age=0`;
+  return `${SESSION_COOKIE}=${baseAttrs(request)}; Max-Age=0`;
 }
 
 export function stateSetCookie(request: Request, value: string): string {
-  return `${STATE_COOKIE}=${encodeURIComponent(value)}; ${baseAttrs(request)}; Max-Age=${STATE_MAX_AGE}`;
+  return `${STATE_COOKIE}=${encodeURIComponent(value)}${baseAttrs(request)}; Max-Age=${STATE_MAX_AGE}`;
 }
 
 export function stateClearCookie(request: Request): string {
-  return `${STATE_COOKIE}=; ${baseAttrs(request)}; Max-Age=0`;
+  return `${STATE_COOKIE}=${baseAttrs(request)}; Max-Age=0`;
 }
 
 export function generateState(): string {
