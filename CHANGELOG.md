@@ -5,24 +5,19 @@
 ### Changed
 - Admin pools page (`/#/admin/pools`): existing pools list moved to the top; the create-pool form moved below it. Heading renamed "Existing pools" → "Pools". Added bottom margin to the list section so there's breathing room before the create form.
 - `GET /api/token/{pool}` (singular) now defaults to **plain text** instead of JSON, so `TOKEN=$(curl .../api/token/openrouter)` Just Works. JSON is only returned when the caller sends `Accept: application/json`. `GET /api/tokens` (plural) and every other endpoint keep JSON as the default. New helper `wantsJson(request)` in `functions/_lib/respond.ts`.
-
-### Fixed
-- `/#/api-key` page was blank and broke the rest of the SPA: the `ExistingKeyMeta` sub-component received a `key` prop, but `key` is reserved by Mithril for keyed reconciliation and is not passed to `vnode.attrs`. So `vnode.attrs.key` was `undefined`, `if (!k.exists)` threw, and the broken mount state poisoned subsequent routes. Renamed state field and prop to `apiKey`.
-
-### Changed
 - Renamed the personal access token from "machine token" to "API key" everywhere except the DB table (`machine_tokens`, kept to avoid another migration). Endpoint: `GET/POST /api/me/api-key`. SPA: new `/#/api-key` page; `/#/tokens` now shows only the pool tokens table and is headed "Tokens". Code: `ApiKey` type, `getApiKey` / `getUserIdByApiKey` / `upsertApiKey` helpers. Topbar gets a new "API key" link.
 
 ### Fixed
+- `/#/tokens` and `/#/api-key` pages stayed on "Loading..." after first visit: `vnode.state` Proxy only triggers redraws inside the synchronous render cycle, so assignments after `await` didn't re-render. Added explicit `m.redraw()` at the end of `loadPoolTokens` (tokens.js) and `loadMeta` (api-key.js).
+- `/#/api-key` page was blank and broke the rest of the SPA: the `ExistingKeyMeta` sub-component received a `key` prop, but `key` is reserved by Mithril for keyed reconciliation and is not passed to `vnode.attrs`. So `vnode.attrs.key` was `undefined`, `if (!k.exists)` threw, and the broken mount state poisoned subsequent routes. Renamed state field and prop to `apiKey`.
 - Infinite redirect loop on logout/login. The 401 handler in `lib/api.js` used to redirect to `/` for every 401, including the initial `/api/me` call on the landing page — which reloaded the page and triggered the same 401. Now we only redirect on 401 when we're on a hash route; on `/`, the SPA renders the login button when `me` is null.
 
 ### Added
 - `DELETE /api/admin/pools/{name}` (admin): hard-deletes a pool and all of its tokens in one batch. 204 on success, 404 if missing, 400 on invalid name. Users with assigned tokens in the pool lose access.
 - `deletePool` helper in `functions/_lib/db.ts`.
 - Admin pool list: red "Delete" button on each row with a `confirm()` dialog that surfaces the count and warns if any tokens are currently assigned.
-
-### Added
 - Bearer auth on all cookie-auth endpoints: middleware tries `Authorization: Bearer <td_pat_...>` if there's no session cookie, looks up the user, and attaches them. `authMethod` is tracked on `context.data` so handlers can require cookie-only.
-- Machine-token endpoints (`GET/POST /api/me/machine-token`) are cookie-only: a Bearer caller is rejected with 403 (chicken-egg: a CI/script caller can't create/rotate its own token; the UI is the only way to bootstrap).
+- Machine-token endpoints (`GET/POST /api/me/machine-token`) are cookie-only: a Bearer caller is rejected with 403 (chicken-egg: a CI/script caller can't create/rotate its own token; the UI is the only way to bootstrap). (Subsequently renamed to `/api/me/api-key` — see Changed above.)
 - Admin dashboard page (`#/admin`): claim window controls (open/close with current state + `opened_by` + `opened_at`) and quick links to sub-pages.
 - Topbar: "Admin" link for admins.
 - Landing page: shows claim-window state and a "claimed X, Y" banner when the user just logged in and got tokens.
@@ -35,7 +30,7 @@
 - `window_state` table (D1, single-row, `is_open` + `opened_by_user_id` + `opened_at`). Manual open/close in v1, no auto-expiring timer.
 - `/tokens` page (`#tokens`): machine token section (create/rotate with one-time plaintext + copy + warning + meta) and pools list (pre-loaded, per-pool show/hide + copy). Empty state when user has no assignments. Topbar gets a "Tokens" link for logged-in users.
 - User tokens API: `GET /api/tokens` and `GET /api/token/{pool}` (cookie auth, content-negotiated JSON or `text/plain`).
-- `POST /api/me/machine-token` (create/rotate, returns plaintext once + meta) and `GET /api/me/machine-token` (meta only: `exists`, `created_at`, `rotated_at`).
+- `POST /api/me/machine-token` (create/rotate, returns plaintext once + meta) and `GET /api/me/machine-token` (meta only: `exists`, `created_at`, `rotated_at`). (Subsequently renamed to `/api/me/api-key` — see Changed above.)
 - `functions/_lib/respond.ts` (`wantsTextPlain`, `jsonResponse`, `textResponse`).
 - `functions/_lib/db.ts`: user-side helpers `getUserAssignedPoolNames`, `getUserAssignedTokens`, `getUserTokenForPool`, `getMachineToken`, `upsertMachineToken`.
 - `/api/me` now returns `pools: [pool names]` for the current user.

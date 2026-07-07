@@ -60,6 +60,7 @@ npm run db:migrate:remote
 
 - `key` is a **reserved attribute** in Mithril (`m(Component, { key: ... })` is consumed by the vnode for keyed reconciliation, NOT passed to `vnode.attrs.key`). Don't name component props `key`. If the child does `vnode.attrs.key` it'll silently get `undefined` and the view throws on first render, leaving the SPA in a partial-mount state where every other route also looks broken.
 - Other reserved attrs to avoid as prop names: `oninit`, `oncreate`, `onupdate`, `onremove`, `onbeforeupdate`, `onbeforeremove`, `view`, `state`.
+- `vnode.state` is a Proxy that triggers redraws on assignment **only during the synchronous render cycle**. After an `await` in `oninit` (or any async helper it calls), assignments to `vnode.state` will not trigger a re-render and the page is stuck on whatever the synchronous part of `oninit` set up. Always end async helpers called from `oninit` with an explicit `m.redraw()`. (`admin-pools.js` / `admin-dashboard.js` already do this via their `refresh()` helpers.)
 
 ## User Override
 

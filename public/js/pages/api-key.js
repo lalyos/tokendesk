@@ -36,6 +36,9 @@ async function loadMeta(vnode) {
   } catch (e) {
     vnode.state.error = e instanceof Error ? e.message : String(e);
   }
+  // Mithril's vnode.state proxy only triggers redraws during the synchronous
+  // render cycle; force one across the await.
+  m.redraw();
 }
 
 function fmtTime(ms) {
