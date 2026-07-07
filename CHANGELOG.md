@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Fixed
+- `/#/api-key` page was blank and broke the rest of the SPA: the `ExistingKeyMeta` sub-component received a `key` prop, but `key` is reserved by Mithril for keyed reconciliation and is not passed to `vnode.attrs`. So `vnode.attrs.key` was `undefined`, `if (!k.exists)` threw, and the broken mount state poisoned subsequent routes. Renamed state field and prop to `apiKey`.
+
 ### Changed
 - Renamed the personal access token from "machine token" to "API key" everywhere except the DB table (`machine_tokens`, kept to avoid another migration). Endpoint: `GET/POST /api/me/api-key`. SPA: new `/#/api-key` page; `/#/tokens` now shows only the pool tokens table and is headed "Tokens". Code: `ApiKey` type, `getApiKey` / `getUserIdByApiKey` / `upsertApiKey` helpers. Topbar gets a new "API key" link.
 

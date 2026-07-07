@@ -56,6 +56,11 @@ npm run db:migrate:remote
 
 `schema.sql` is idempotent (`CREATE TABLE IF NOT EXISTS`), so re-running the whole file is safe. Schema changes are incomplete until both have been run.
 
+## Mithril gotchas
+
+- `key` is a **reserved attribute** in Mithril (`m(Component, { key: ... })` is consumed by the vnode for keyed reconciliation, NOT passed to `vnode.attrs.key`). Don't name component props `key`. If the child does `vnode.attrs.key` it'll silently get `undefined` and the view throws on first render, leaving the SPA in a partial-mount state where every other route also looks broken.
+- Other reserved attrs to avoid as prop names: `oninit`, `oncreate`, `onupdate`, `onremove`, `onbeforeupdate`, `onbeforeremove`, `view`, `state`.
+
 ## User Override
 
 If the user's instructions conflict with any rule in this document, ask for explicit confirmation before overriding. Only then execute their instructions.

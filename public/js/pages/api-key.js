@@ -11,7 +11,7 @@ export const ApiKey = {
     vnode.state.loading = true;
     vnode.state.error = null;
     vnode.state.flash = null;
-    vnode.state.key = { exists: false, created_at: null, rotated_at: null };
+    vnode.state.apiKey = { exists: false, created_at: null, rotated_at: null };
     vnode.state.newKey = null;          // plaintext returned by the most recent POST
     vnode.state.newKeyHidden = false;   // user can hide it after seeing it
     vnode.state.busy = false;           // disable buttons during POST
@@ -26,13 +26,13 @@ export const ApiKey = {
       vnode.state.flash ? m("p.ok", vnode.state.flash) : null,
       vnode.state.newKey
         ? m(NewKeyDisplay, { vnode })
-        : m(ExistingKeyMeta, { vnode, key: vnode.state.key }),
+        : m(ExistingKeyMeta, { vnode, apiKey: vnode.state.apiKey }),
     ]),
 };
 
 async function loadMeta(vnode) {
   try {
-    vnode.state.key = await apiGet("/api/me/api-key");
+    vnode.state.apiKey = await apiGet("/api/me/api-key");
   } catch (e) {
     vnode.state.error = e instanceof Error ? e.message : String(e);
   }
@@ -46,14 +46,14 @@ function fmtTime(ms) {
 const ExistingKeyMeta = {
   view: (vnode) => {
     const s = vnode.attrs.vnode.state;
-    const k = vnode.attrs.key;
+    const k = vnode.attrs.apiKey;
     const create = async () => {
       s.busy = true;
       s.error = null;
       try {
         s.newKey = await apiPost("/api/me/api-key", undefined);
         s.newKeyHidden = false;
-        s.key = {
+        s.apiKey = {
           exists: true,
           created_at: s.newKey.created_at,
           rotated_at: s.newKey.rotated_at,
@@ -105,7 +105,7 @@ const NewKeyDisplay = {
       try {
         s.newKey = await apiPost("/api/me/api-key", undefined);
         s.newKeyHidden = false;
-        s.key = {
+        s.apiKey = {
           exists: true,
           created_at: s.newKey.created_at,
           rotated_at: s.newKey.rotated_at,
