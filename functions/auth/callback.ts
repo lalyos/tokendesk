@@ -88,10 +88,20 @@ export const onRequestGet: PagesFunction<Env, any, PagesContextData> = async (co
       user.id,
       context.env.SESSION_SECRET,
     );
+    console.log("[auth/callback] signing session", {
+      userId: user.id,
+      sessionValuePrefix: sessionValue.slice(0, 40),
+    });
+    const sessionCookie = sessionSetCookie(context.request, sessionValue);
+    const stateCookieClear = stateClearCookie(context.request);
+    console.log("[auth/callback] Set-Cookie headers", {
+      session: sessionCookie,
+      stateClear: stateCookieClear,
+    });
     const headers = new Headers();
     headers.set("Location", "/");
-    headers.append("Set-Cookie", sessionSetCookie(context.request, sessionValue));
-    headers.append("Set-Cookie", stateClearCookie(context.request));
+    headers.append("Set-Cookie", sessionCookie);
+    headers.append("Set-Cookie", stateCookieClear);
     console.log("[auth/callback] success, redirecting to /", { userId: user.id });
     return new Response(null, { status: 302, headers });
   } catch (err) {

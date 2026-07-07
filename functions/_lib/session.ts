@@ -73,15 +73,33 @@ export async function verifySession(
   secret: string,
 ): Promise<number | null> {
   const cookie = readCookie(request, SESSION_COOKIE);
+  console.log("[verifySession]", {
+    cookieFound: !!cookie,
+    cookieValue: cookie?.slice(0, 80),
+    cookieLen: cookie?.length,
+  });
   if (!cookie) return null;
   const dot = cookie.indexOf(".");
-  if (dot < 0) return null;
+  if (dot < 0) {
+    console.warn("[verifySession] no dot in cookie value");
+    return null;
+  }
   const userIdStr = cookie.slice(0, dot);
   const mac = cookie.slice(dot + 1);
   const expected = await hmac(secret, userIdStr);
-  if (!constantTimeEqual(mac, expected)) return null;
+  const matches = constantTimeEqual(mac, expected);
+  console.log("[verifySession] hmac check", {
+    userIdStr,
+    macLen: mac.length,
+    expectedLen: expected.length,
+    matches,
+  });
+  if (!matches) return null;
   const id = Number(userIdStr);
-  if (!Number.isInteger(id) || id <= 0) return null;
+  if (!Number.isInteger(id) || id <= 0) {
+    console.warn("[verifySession] bad userId", { userIdStr });
+    return null;
+  }
   return id;
 }
 
