@@ -1,6 +1,5 @@
-// GET /auth/callback — exchanges code, upserts user, sets session cookie.
-// Redirects to / for now (SPEC says /tokens, but the SPA isn't built yet).
-// Claim logic is intentionally out of scope here — no pools, no KV.
+// GET /auth/callback — exchanges code, upserts user, runs claim logic if the
+// claim window is open, then sets the session cookie. Redirects to /.
 
 import type { PagesFunction } from "@cloudflare/workers-types";
 import type { Env, PagesContextData } from "../_lib/env";
@@ -12,7 +11,8 @@ import {
   STATE_COOKIE,
 } from "../_lib/session";
 import { exchangeCode, getUser, getPrimaryEmail } from "../_lib/github";
-import { upsertUser } from "../_lib/db";
+import { upsertUser, getWindowState } from "../_lib/db";
+import { runClaim } from "../_lib/claim";
 
 export const onRequestGet: PagesFunction<Env, any, PagesContextData> = async (context) => {
   const url = new URL(context.request.url);
@@ -38,13 +38,27 @@ export const onRequestGet: PagesFunction<Env, any, PagesContextData> = async (co
       email,
       avatar_url: ghUser.avatar_url,
     });
+
+    // Claim logic. Idempotent: skips pools where the user already has a
+    // token, and pools with no free tokens. SPEC §5.
+    let claimed: string[] = [];
+    const ws = await getWindowState(context.env);
+    if (ws.is_open) {
+      const result = await runClaim(context.env, user.id);
+      claimed = result.claimed;
+    }
+
     const sessionValue = await signSession(
       context.request,
       user.id,
       context.env.SESSION_SECRET,
     );
     const headers = new Headers();
-    headers.set("Location", "/");
+    // Pass the claimed list as a query param so the SPA can show a banner.
+    const target = claimed.length > 0
+      ? `/?claimed=${encodeURIComponent(claimed.join(","))}`
+      : "/";
+    headers.set("Location", target);
     headers.append("Set-Cookie", sessionSetCookie(context.request, sessionValue));
     headers.append("Set-Cookie", stateClearCookie(context.request));
     return new Response(null, { status: 302, headers });
@@ -57,3 +71,4 @@ export const onRequestGet: PagesFunction<Env, any, PagesContextData> = async (co
     );
   }
 };
+

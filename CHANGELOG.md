@@ -3,6 +3,11 @@
 ## [Unreleased]
 
 ### Added
+- Claim window API (admin): `GET/POST/DELETE /api/admin/window`. Manual open/close (no auto-expiring timer in v1). Backed by the `window_state` table.
+- Claim logic in `auth/callback.ts`: after upsert, if the window is open, run `runClaim(env, user.id)`. Idempotent and race-safe per pool via `UPDATE ... WHERE id = (SELECT ... AND NOT EXISTS(...))`.
+- `functions/_lib/claim.ts` (`runClaim`).
+- `functions/_lib/db.ts` window helpers: `getWindowState`, `openWindow`, `closeWindow`.
+- `/api/me` now returns `window_open: boolean` so the UI can show claim-window state.
 - `window_state` table (D1, single-row, `is_open` + `opened_by_user_id` + `opened_at`). Manual open/close in v1, no auto-expiring timer.
 - `/tokens` page (`#tokens`): machine token section (create/rotate with one-time plaintext + copy + warning + meta) and pools list (pre-loaded, per-pool show/hide + copy). Empty state when user has no assignments. Topbar gets a "Tokens" link for logged-in users.
 - User tokens API: `GET /api/tokens` and `GET /api/token/{pool}` (cookie auth, content-negotiated JSON or `text/plain`).

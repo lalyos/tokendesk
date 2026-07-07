@@ -254,4 +254,53 @@ export async function upsertMachineToken(
   return row;
 }
 
+// --- claim window state ---
+
+export interface WindowState {
+  is_open: boolean;
+  opened_by: string | null;  // gh_user
+  opened_at: number | null;
+}
+
+export async function getWindowState(env: Env): Promise<WindowState> {
+  const row = await env.DB.prepare(
+    `SELECT ws.is_open     AS is_open,
+            ws.opened_at   AS opened_at,
+            u.gh_user      AS opened_by
+     FROM window_state ws
+     LEFT JOIN users u ON u.id = ws.opened_by_user_id
+     WHERE ws.id = 1`,
+  ).first<{ is_open: number; opened_by: string | null; opened_at: number | null }>();
+  if (!row) return { is_open: false, opened_by: null, opened_at: null };
+  return {
+    is_open: row.is_open === 1,
+    opened_by: row.opened_by,
+    opened_at: row.opened_at,
+  };
+}
+
+export async function openWindow(env: Env, userId: number): Promise<WindowState> {
+  const now = Date.now();
+  await env.DB.prepare(
+    `INSERT INTO window_state (id, is_open, opened_by_user_id, opened_at)
+     VALUES (1, 1, ?, ?)
+     ON CONFLICT(id) DO UPDATE SET
+       is_open = 1,
+       opened_by_user_id = excluded.opened_by_user_id,
+       opened_at = excluded.opened_at`,
+  )
+    .bind(userId, now)
+    .run();
+  return getWindowState(env);
+}
+
+export async function closeWindow(env: Env): Promise<WindowState> {
+  await env.DB.prepare(
+    `UPDATE window_state
+     SET is_open = 0, opened_by_user_id = NULL, opened_at = NULL
+     WHERE id = 1`,
+  ).run();
+  return { is_open: false, opened_by: null, opened_at: null };
+}
+
 
