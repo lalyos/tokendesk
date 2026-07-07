@@ -3,6 +3,10 @@
 ## [Unreleased]
 
 ### Added
+- Admin dashboard page (`#/admin`): claim window controls (open/close with current state + `opened_by` + `opened_at`) and quick links to sub-pages.
+- Topbar: "Admin" link for admins.
+- Landing page: shows claim-window state and a "claimed X, Y" banner when the user just logged in and got tokens.
+- `/tokens` empty state: copy reflects the current window state ("claim window is OPEN. Log out and back in..." vs "check back after an admin opens it").
 - Claim window API (admin): `GET/POST/DELETE /api/admin/window`. Manual open/close (no auto-expiring timer in v1). Backed by the `window_state` table.
 - Claim logic in `auth/callback.ts`: after upsert, if the window is open, run `runClaim(env, user.id)`. Idempotent and race-safe per pool via `UPDATE ... WHERE id = (SELECT ... AND NOT EXISTS(...))`.
 - `functions/_lib/claim.ts` (`runClaim`).

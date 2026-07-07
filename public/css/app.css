@@ -194,6 +194,12 @@ dl.meta {
 dl.meta dt { color: var(--muted); }
 dl.meta dd { margin: 0; }
 
+.ok-text { color: var(--ok-fg); }
+.muted { color: var(--muted); }
+
+ul.links { list-style: none; padding: 0; margin: 0; }
+ul.links li { margin: 0.3rem 0; }
+
 .badge {
   display: inline-block;
   padding: 0.1rem 0.5rem;

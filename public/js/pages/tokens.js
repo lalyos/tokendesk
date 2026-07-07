@@ -199,9 +199,13 @@ const PoolsSection = {
       return m("section", m("p.muted", "Loading..."));
     }
     if (s.poolNames.length === 0) {
+      const me = window.__td_me ? window.__td_me() : null;
+      const open = me?.window_open;
       return m("section", [
         m("h2", "Pool tokens"),
-        m("p.muted", "You have no tokens assigned. Ask an admin to open the claim window and log in again."),
+        open
+          ? m("p.ok", "Claim window is OPEN. Log out and back in to claim a token from each pool.")
+          : m("p.muted", "You have no tokens assigned. The claim window is currently closed — check back after an admin opens it."),
       ]);
     }
     return m("section", [

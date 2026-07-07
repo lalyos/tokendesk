@@ -5,6 +5,7 @@
 import { Landing } from "./pages/landing.js";
 import { Tokens } from "./pages/tokens.js";
 import { AdminPools } from "./pages/admin-pools.js";
+import { AdminDashboard } from "./pages/admin-dashboard.js";
 import { apiGet } from "./lib/api.js";
 
 // One global "me" — fetched once on page load, updated on login/logout.
@@ -38,6 +39,9 @@ const Header = {
       m("a.brand", { href: "#/" }, "TokenDesk"),
       m("nav", [
         u ? m("a", { href: "#/tokens" }, "Tokens") : null,
+        u && u.is_admin
+          ? m("a", { href: "#/admin" }, "Admin")
+          : null,
         u && u.is_admin ? m("a", { href: "#/admin/pools" }, "Pools") : null,
       ]),
       m("div.right", [
@@ -67,5 +71,6 @@ await loadMe();
 m.route(document.getElementById("app"), "/", {
   "/": wrap(Landing),
   "/tokens": wrap(Tokens),
+  "/admin": wrap(AdminDashboard),
   "/admin/pools": wrap(AdminPools),
 });
