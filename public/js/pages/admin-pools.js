@@ -132,8 +132,8 @@ const PoolList = {
     const s = vnode.attrs.state;
     if (s.loading && s.pools.length === 0) return m("p.muted", "Loading...");
     if (s.pools.length === 0) return m("p.muted", "No pools yet. Create one above.");
-    return m("section", [
-      m("h2", "Existing pools"),
+    return m("section", { style: { marginBottom: "2rem" } }, [
+      m("h2", "Pools"),
       m("table.pools", [
         m("thead", m("tr", [m("th", "Name"), m("th", "Total"), m("th", "Free"), m("th", "Assigned"), m("th", "")])),
         s.pools.flatMap((p) => m(PoolRow, { state: s, pool: p })),

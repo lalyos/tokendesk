@@ -3,7 +3,7 @@
 ## [Unreleased]
 
 ### Changed
-- Admin pools page (`/#/admin/pools`): existing pools list moved to the top; the create-pool form moved below it.
+- Admin pools page (`/#/admin/pools`): existing pools list moved to the top; the create-pool form moved below it. Heading renamed "Existing pools" → "Pools". Added bottom margin to the list section so there's breathing room before the create form.
 - `GET /api/token/{pool}` (singular) now defaults to **plain text** instead of JSON, so `TOKEN=$(curl .../api/token/openrouter)` Just Works. JSON is only returned when the caller sends `Accept: application/json`. `GET /api/tokens` (plural) and every other endpoint keep JSON as the default. New helper `wantsJson(request)` in `functions/_lib/respond.ts`.
 
 ### Fixed
