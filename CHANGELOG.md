@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Fixed
+- Infinite redirect loop on logout/login. The 401 handler in `lib/api.js` used to redirect to `/` for every 401, including the initial `/api/me` call on the landing page — which reloaded the page and triggered the same 401. Now we only redirect on 401 when we're on a hash route; on `/`, the SPA renders the login button when `me` is null.
+
 ### Added
 - Bearer auth on all cookie-auth endpoints: middleware tries `Authorization: Bearer <td_pat_...>` if there's no session cookie, looks up the user, and attaches them. `authMethod` is tracked on `context.data` so handlers can require cookie-only.
 - Machine-token endpoints (`GET/POST /api/me/machine-token`) are cookie-only: a Bearer caller is rejected with 403 (chicken-egg: a CI/script caller can't create/rotate its own token; the UI is the only way to bootstrap).

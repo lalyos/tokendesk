@@ -37,8 +37,12 @@ export async function apiSend(method, path, body) {
 
 async function handle(res, method, path) {
   if (res.status === 401) {
-    // Lost session — bounce to landing.
-    window.location.href = "/";
+    // Lost session — bounce to landing only if we're on a protected
+    // (hash-routed) page. On "/" the SPA renders the login button when
+    // me is null, so a redirect would cause an infinite reload loop.
+    if (window.location.hash) {
+      window.location.href = "/";
+    }
     throw new ApiError(401, "unauthenticated");
   }
   let body = null;
