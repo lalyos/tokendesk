@@ -12,7 +12,19 @@ database_id = "fd755ab1-6b9e-4b3e-9af3-3c22f345716e"
 # KV binding for the claim window. To be added when §4 lands.
 
 # Env vars. Secrets (GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, SESSION_SECRET,
-# ADMIN_GH_USERS) go via `wrangler pages secret put <NAME>` per environment.
-# Override GITHUB_OAUTH_REDIRECT_BASE in the CF Pages project settings for prod.
+# ADMIN_GH_USERS) go via `wrangler pages secret put <NAME>` per environment
+# and are editable in the dashboard.
+#
+# Plaintext env vars (anything in [vars] below) are NOT editable in the
+# dashboard — they have to be set here. The top-level [vars] is the default
+# used by `wrangler pages dev` (local). Production and Preview are scoped
+# below. CF Pages treats the master branch as 'production' and any other
+# branch as 'preview'.
 [vars]
 GITHUB_OAUTH_REDIRECT_BASE = "http://localhost:8788"
+
+[env.production.vars]
+GITHUB_OAUTH_REDIRECT_BASE = "https://tokendesk.pages.dev"
+
+[env.preview.vars]
+GITHUB_OAUTH_REDIRECT_BASE = "https://tokendesk.pages.dev"

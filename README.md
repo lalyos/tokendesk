@@ -76,14 +76,22 @@ wrangler pages secret put ADMIN_GH_USERS --project-name=tokendesk
 For `ADMIN_GH_USERS`, enter a comma-separated list of GitHub usernames that
 should have admin access (per SPEC §2.4), e.g. `lalyos`.
 
-Also override the redirect base for prod. In the Pages project -> **Settings**
--> **Environment variables**, add:
+`GITHUB_OAUTH_REDIRECT_BASE` is a plaintext env var and the Pages dashboard
+won't let you edit it (only secrets are editable). It's set in `wrangler.toml`
+with separate values for local dev, production, and preview:
 
-| Variable                       | Value                                |
-| ------------------------------ | ------------------------------------ |
-| `GITHUB_OAUTH_REDIRECT_BASE`   | `https://tokendesk.pages.dev`        |
+```toml
+[vars]                                 # local dev (wrangler pages dev)
+GITHUB_OAUTH_REDIRECT_BASE = "http://localhost:8788"
 
-(Local dev uses the default in `wrangler.toml`: `http://localhost:8788`.)
+[env.production.vars]                  # master branch
+GITHUB_OAUTH_REDIRECT_BASE = "https://tokendesk.pages.dev"
+
+[env.preview.vars]                     # any other branch
+GITHUB_OAUTH_REDIRECT_BASE = "https://tokendesk.pages.dev"
+```
+
+Change the prod/preview value to your custom domain if you have one.
 
 ## Local dev
 
