@@ -61,6 +61,15 @@ export function readCookie(request: Request, name: string): string | null {
   return null;
 }
 
+const BEARER_RE = /^Bearer\s+(\S.*)$/;
+
+export function extractBearer(request: Request): string | null {
+  const h = request.headers.get("Authorization");
+  if (!h) return null;
+  const m = BEARER_RE.exec(h);
+  return m ? m[1]!.trim() : null;
+}
+
 export async function signSession(
   request: Request,
   userId: number,

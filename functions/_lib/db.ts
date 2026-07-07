@@ -222,6 +222,18 @@ export async function getMachineToken(
   return row ?? null;
 }
 
+export async function getUserIdByMachineToken(
+  env: Env,
+  token: string,
+): Promise<number | null> {
+  const row = await env.DB.prepare(
+    `SELECT user_id FROM machine_tokens WHERE token = ?`,
+  )
+    .bind(token)
+    .first<{ user_id: number }>();
+  return row?.user_id ?? null;
+}
+
 function generateMachineTokenValue(): string {
   const bytes = new Uint8Array(16);
   crypto.getRandomValues(bytes);

@@ -3,6 +3,8 @@
 ## [Unreleased]
 
 ### Added
+- Bearer auth on all cookie-auth endpoints: middleware tries `Authorization: Bearer <td_pat_...>` if there's no session cookie, looks up the user, and attaches them. `authMethod` is tracked on `context.data` so handlers can require cookie-only.
+- Machine-token endpoints (`GET/POST /api/me/machine-token`) are cookie-only: a Bearer caller is rejected with 403 (chicken-egg: a CI/script caller can't create/rotate its own token; the UI is the only way to bootstrap).
 - Admin dashboard page (`#/admin`): claim window controls (open/close with current state + `opened_by` + `opened_at`) and quick links to sub-pages.
 - Topbar: "Admin" link for admins.
 - Landing page: shows claim-window state and a "claimed X, Y" banner when the user just logged in and got tokens.

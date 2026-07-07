@@ -22,5 +22,6 @@ export interface Env {
 
 export interface PagesContextData {
   user?: User;
+  authMethod?: "cookie" | "bearer";
   [key: string]: unknown;
 }
