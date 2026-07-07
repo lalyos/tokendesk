@@ -3,6 +3,11 @@
 ## [Unreleased]
 
 ### Added
+- User tokens API: `GET /api/tokens` and `GET /api/token/{pool}` (cookie auth, content-negotiated JSON or `text/plain`).
+- `POST /api/me/machine-token` (create/rotate, returns plaintext once + meta) and `GET /api/me/machine-token` (meta only: `exists`, `created_at`, `rotated_at`).
+- `functions/_lib/respond.ts` (`wantsTextPlain`, `jsonResponse`, `textResponse`).
+- `functions/_lib/db.ts`: user-side helpers `getUserAssignedPoolNames`, `getUserAssignedTokens`, `getUserTokenForPool`, `getMachineToken`, `upsertMachineToken`.
+- `/api/me` now returns `pools: [pool names]` for the current user.
 - Pool admin API: `GET/POST /api/admin/pools`, `GET/POST /api/admin/pools/{name}`. Admin-only; supports pool name validation (`^[a-z0-9][a-z0-9-]{0,31}$`), duplicate-pool 409, batched token inserts.
 - `functions/_lib/validate.ts` (pool name + token array validation, `ValidationError`, `jsonError`).
 - Pool DB helpers in `functions/_lib/db.ts` (`getPoolByName`, `createPool`, `addPoolTokens`, `listPoolSummaries`, `getPoolDetail`).

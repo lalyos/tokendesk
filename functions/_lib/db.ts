@@ -148,3 +148,110 @@ export async function getPoolDetail(
   };
 }
 
+// --- user-side: tokens assigned to a user ---
+
+export async function getUserAssignedPoolNames(
+  env: Env,
+  userId: number,
+): Promise<string[]> {
+  const rows = await env.DB.prepare(
+    `SELECT p.name AS name
+     FROM pool_tokens t
+     JOIN pools p ON p.id = t.pool_id
+     WHERE t.assigned_to_user_id = ?
+     ORDER BY p.name`,
+  )
+    .bind(userId)
+    .all<{ name: string }>();
+  return (rows.results ?? []).map((r) => r.name);
+}
+
+export async function getUserAssignedTokens(
+  env: Env,
+  userId: number,
+): Promise<Record<string, string>> {
+  const rows = await env.DB.prepare(
+    `SELECT p.name AS name, t.value AS value
+     FROM pool_tokens t
+     JOIN pools p ON p.id = t.pool_id
+     WHERE t.assigned_to_user_id = ?
+     ORDER BY p.name`,
+  )
+    .bind(userId)
+    .all<{ name: string; value: string }>();
+  const out: Record<string, string> = {};
+  for (const r of rows.results ?? []) out[r.name] = r.value;
+  return out;
+}
+
+export async function getUserTokenForPool(
+  env: Env,
+  userId: number,
+  poolName: string,
+): Promise<string | null> {
+  const row = await env.DB.prepare(
+    `SELECT t.value AS value
+     FROM pool_tokens t
+     JOIN pools p ON p.id = t.pool_id
+     WHERE t.assigned_to_user_id = ? AND p.name = ?
+     LIMIT 1`,
+  )
+    .bind(userId, poolName)
+    .first<{ value: string }>();
+  return row?.value ?? null;
+}
+
+// --- machine tokens ---
+
+export interface MachineToken {
+  token: string;
+  created_at: number;
+  rotated_at: number | null;
+}
+
+export async function getMachineToken(
+  env: Env,
+  userId: number,
+): Promise<MachineToken | null> {
+  const row = await env.DB.prepare(
+    `SELECT token, created_at, rotated_at
+     FROM machine_tokens WHERE user_id = ?`,
+  )
+    .bind(userId)
+    .first<MachineToken>();
+  return row ?? null;
+}
+
+function generateMachineTokenValue(): string {
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  let hex = "";
+  for (const b of bytes) hex += b.toString(16).padStart(2, "0");
+  return `td_pat_${hex}`;
+}
+
+/**
+ * Create or rotate the user's machine token. Returns the plaintext + meta.
+ * SPEC.md §6.1 — the `token` field is the only time the plaintext is exposed.
+ */
+export async function upsertMachineToken(
+  env: Env,
+  userId: number,
+): Promise<MachineToken> {
+  const now = Date.now();
+  const token = generateMachineTokenValue();
+  const row = await env.DB.prepare(
+    `INSERT INTO machine_tokens (user_id, token, created_at, rotated_at)
+     VALUES (?, ?, ?, NULL)
+     ON CONFLICT(user_id) DO UPDATE SET
+       token = excluded.token,
+       rotated_at = excluded.created_at
+     RETURNING token, created_at, rotated_at`,
+  )
+    .bind(userId, token, now)
+    .first<MachineToken>();
+  if (!row) throw new Error("upsertMachineToken returned no row");
+  return row;
+}
+
+
