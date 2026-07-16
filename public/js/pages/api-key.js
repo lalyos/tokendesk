@@ -20,8 +20,9 @@ export const ApiKey = {
   },
   view: (vnode) =>
     m("main.container", [
-      m("h1", "API key"),
-      m("p.muted", "Use this key to call the API from CI/scripts. Format: td_pat_<32 hex>."),
+      m("h1", "Settings"),
+      m("h2", "API key"),
+      m("p.muted", "For CLI/script integration only — not needed to view your assigned tokens. Format: td_pat_<32 hex>."),
       vnode.state.error ? m("p.error", vnode.state.error) : null,
       vnode.state.flash ? m("p.ok", vnode.state.flash) : null,
       vnode.state.newKey

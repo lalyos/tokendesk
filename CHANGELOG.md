@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### Changed
+- API key page moved from its own top-level "API key" nav link to `/#/settings`, headed "Settings". Users mistook the "API key" menu item for a way to get a token for external services; it's actually for CLI/script integration. Topbar and landing-page links renamed "API key" → "Settings". Page copy now clarifies "For CLI/script integration only — not needed to view your assigned tokens." Backend route (`/api/me/api-key`) unchanged.
 - Admin pools page (`/#/admin/pools`): existing pools list moved to the top; the create-pool form moved below it. Heading renamed "Existing pools" → "Pools". Added bottom margin to the list section so there's breathing room before the create form.
 - `GET /api/token/{pool}` (singular) now defaults to **plain text** instead of JSON, so `TOKEN=$(curl .../api/token/openrouter)` Just Works. JSON is only returned when the caller sends `Accept: application/json`. `GET /api/tokens` (plural) and every other endpoint keep JSON as the default. New helper `wantsJson(request)` in `functions/_lib/respond.ts`.
 - Renamed the personal access token from "machine token" to "API key" everywhere except the DB table (`machine_tokens`, kept to avoid another migration). Endpoint: `GET/POST /api/me/api-key`. SPA: new `/#/api-key` page; `/#/tokens` now shows only the pool tokens table and is headed "Tokens". Code: `ApiKey` type, `getApiKey` / `getUserIdByApiKey` / `upsertApiKey` helpers. Topbar gets a new "API key" link.

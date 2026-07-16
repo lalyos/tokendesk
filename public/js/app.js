@@ -40,7 +40,7 @@ const Header = {
       m("a.brand", { href: "#/" }, "TokenDesk"),
       m("nav", [
         u ? m("a", { href: "#/tokens" }, "Tokens") : null,
-        u ? m("a", { href: "#/api-key" }, "API key") : null,
+        u ? m("a", { href: "#/settings" }, "Settings") : null,
         u && u.is_admin
           ? m("a", { href: "#/admin" }, "Admin")
           : null,
@@ -73,7 +73,7 @@ await loadMe();
 m.route(document.getElementById("app"), "/", {
   "/": wrap(Landing),
   "/tokens": wrap(Tokens),
-  "/api-key": wrap(ApiKey),
+  "/settings": wrap(ApiKey),
   "/admin": wrap(AdminDashboard),
   "/admin/pools": wrap(AdminPools),
 });

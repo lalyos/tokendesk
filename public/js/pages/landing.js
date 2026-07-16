@@ -31,7 +31,7 @@ export const Landing = {
         m("p", [
           m("a.btn", { href: "#/tokens" }, "Tokens"),
           " ",
-          m("a.btn", { href: "#/api-key" }, "API key"),
+          m("a.btn", { href: "#/settings" }, "Settings"),
           " ",
           me.is_admin
             ? m("a.btn", { href: "#/admin" }, "Admin")

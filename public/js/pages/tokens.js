@@ -3,7 +3,7 @@
 //   - click-to-reveal + copy
 //   - empty state reflects the current claim-window state
 //
-// API key lives on its own page (/#/api-key).
+// API key lives on the Settings page (/#/settings).
 
 import { apiGet, ApiError } from "../lib/api.js";
 import { copyToClipboard } from "../lib/clipboard.js";
